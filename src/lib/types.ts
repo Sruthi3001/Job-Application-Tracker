@@ -11,6 +11,8 @@ export interface JobApplication {
   notes?: string;
   salary?: string;
   type: 'full-time' | 'internship' | 'contract' | 'part-time';
+  resumeUrl?: string;
+  resumeName?: string;
 }
 
 export const STATUS_CONFIG: Record<ApplicationStatus, { label: string; colorClass: string }> = {

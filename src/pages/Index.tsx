@@ -5,17 +5,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatsCards } from '@/components/StatsCards';
 import { ApplicationTable } from '@/components/ApplicationTable';
 import { ApplicationDialog } from '@/components/ApplicationDialog';
-import { getApplications, addApplication, updateApplication, deleteApplication } from '@/lib/store';
+import { AnalyticsCharts } from '@/components/AnalyticsCharts';
+import { useApplications } from '@/hooks/useApplications';
+import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase } from 'lucide-react';
-import { toast } from 'sonner';
+import { Plus, Search, Briefcase, LogOut, BarChart3 } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 const Index = () => {
-  const [applications, setApplications] = useState<JobApplication[]>(getApplications);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const filtered = useMemo(() => {
     return applications.filter(a => {
@@ -25,32 +29,28 @@ const Index = () => {
     });
   }, [applications, search, statusFilter]);
 
-  const handleSave = (data: Omit<JobApplication, 'id'>) => {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+
+  const handleSave = (data: Omit<JobApplication, 'id'>, resumeFile?: File) => {
     if (editing) {
-      const updated = updateApplication(editing.id, data);
-      setApplications(updated);
-      toast.success('Application updated');
+      updateApplication(editing.id, data, resumeFile);
     } else {
-      addApplication(data);
-      setApplications(getApplications());
-      toast.success('Application added');
+      addApplication(data, resumeFile);
     }
     setEditing(null);
   };
 
   const handleEdit = (app: JobApplication) => { setEditing(app); setDialogOpen(true); };
-
-  const handleDelete = (id: string) => {
-    const updated = deleteApplication(id);
-    setApplications(updated);
-    toast.success('Application deleted');
-  };
-
-  const handleStatusChange = (id: string, status: ApplicationStatus) => {
-    const updated = updateApplication(id, { status });
-    setApplications(updated);
-    toast.success('Status updated');
-  };
+  const handleDelete = (id: string) => deleteApplication(id);
+  const handleStatusChange = (id: string, status: ApplicationStatus) => updateApplication(id, { status });
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,9 +62,17 @@ const Index = () => {
             </div>
             <h1 className="text-lg font-bold tracking-tight">JobTracker</h1>
           </div>
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
-            <Plus className="h-4 w-4" /> Add Application
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
+              <BarChart3 className="h-4 w-4" /> Analytics
+            </Button>
+            <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+            <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -75,6 +83,8 @@ const Index = () => {
         </div>
 
         <StatsCards applications={applications} />
+
+        {showAnalytics && <AnalyticsCharts applications={applications} />}
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -97,7 +107,13 @@ const Index = () => {
           </Select>
         </div>
 
-        <ApplicationTable applications={filtered} onEdit={handleEdit} onDelete={handleDelete} onStatusChange={handleStatusChange} />
+        {loading ? (
+          <div className="rounded-xl border bg-card p-12 text-center">
+            <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          </div>
+        ) : (
+          <ApplicationTable applications={filtered} onEdit={handleEdit} onDelete={handleDelete} onStatusChange={handleStatusChange} />
+        )}
       </main>
 
       <ApplicationDialog open={dialogOpen} onOpenChange={setDialogOpen} application={editing} onSave={handleSave} />

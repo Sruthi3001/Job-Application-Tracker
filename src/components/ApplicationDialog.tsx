@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,12 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
+import { FileText, Upload, X } from 'lucide-react';
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   application?: JobApplication | null;
-  onSave: (data: Omit<JobApplication, 'id'>) => void;
+  onSave: (data: Omit<JobApplication, 'id'>, resumeFile?: File) => void;
 }
 
 const defaultForm = {
@@ -22,6 +23,8 @@ const defaultForm = {
 
 export function ApplicationDialog({ open, onOpenChange, application, onSave }: Props) {
   const [form, setForm] = useState(defaultForm);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (application) {
@@ -29,13 +32,14 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
     } else {
       setForm(defaultForm);
     }
+    setResumeFile(null);
   }, [application, open]);
 
   const set = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{application ? 'Edit Application' : 'Add Application'}</DialogTitle>
         </DialogHeader>
@@ -96,6 +100,34 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
             <Label htmlFor="url">Job URL</Label>
             <Input id="url" value={form.url} onChange={e => set('url', e.target.value)} placeholder="https://..." />
           </div>
+
+          {/* Resume Upload */}
+          <div className="space-y-1.5">
+            <Label>Resume</Label>
+            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => { if (e.target.files?.[0]) setResumeFile(e.target.files[0]); }} />
+            {resumeFile ? (
+              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                <FileText className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm truncate flex-1">{resumeFile.name}</span>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setResumeFile(null)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : application?.resumeName ? (
+              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                <FileText className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm truncate flex-1">{application.resumeName}</span>
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="h-3 w-3 mr-1" /> Replace
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" className="w-full gap-2" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4" /> Upload Resume (PDF, DOC)
+              </Button>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Any notes about this application..." rows={3} />
@@ -103,7 +135,7 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => { if (form.company && form.role) { onSave(form); onOpenChange(false); } }} disabled={!form.company || !form.role}>
+          <Button onClick={() => { if (form.company && form.role) { onSave(form, resumeFile || undefined); onOpenChange(false); } }} disabled={!form.company || !form.role}>
             {application ? 'Save Changes' : 'Add Application'}
           </Button>
         </DialogFooter>

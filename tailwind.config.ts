@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -56,6 +59,14 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        status: {
+          applied: "hsl(var(--status-applied))",
+          screening: "hsl(var(--status-screening))",
+          interview: "hsl(var(--status-interview))",
+          offer: "hsl(var(--status-offer))",
+          rejected: "hsl(var(--status-rejected))",
+          saved: "hsl(var(--status-saved))",
         },
       },
       borderRadius: {

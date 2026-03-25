@@ -9,25 +9,35 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3 } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Plus, Search, Briefcase, LogOut, BarChart3, UserCircle } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+
+  const uniqueCompanies = useMemo(() => {
+    const companies = [...new Set(applications.map(a => a.company))].sort();
+    return companies;
+  }, [applications]);
 
   const filtered = useMemo(() => {
     return applications.filter(a => {
       const matchesSearch = !search || a.company.toLowerCase().includes(search.toLowerCase()) || a.role.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesType = typeFilter === 'all' || a.type === typeFilter;
+      const matchesCompany = companyFilter === 'all' || a.company === companyFilter;
+      return matchesSearch && matchesStatus && matchesType && matchesCompany;
     });
-  }, [applications, search, statusFilter]);
+  }, [applications, search, statusFilter, typeFilter, companyFilter]);
 
   if (authLoading) {
     return (
@@ -69,6 +79,9 @@ const Index = () => {
             <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
               <Plus className="h-4 w-4" /> Add
             </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} title="View Profile">
+              <UserCircle className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
               <LogOut className="h-4 w-4" />
             </Button>
@@ -86,14 +99,14 @@ const Index = () => {
 
         {showAnalytics && <AnalyticsCharts applications={applications} />}
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search by company or role..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="All statuses" />
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
@@ -103,6 +116,29 @@ const Index = () => {
               <SelectItem value="interview">Interview</SelectItem>
               <SelectItem value="offer">Offer</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="full-time">Full-time</SelectItem>
+              <SelectItem value="internship">Internship</SelectItem>
+              <SelectItem value="contract">Contract</SelectItem>
+              <SelectItem value="part-time">Part-time</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Company" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All companies</SelectItem>
+              {uniqueCompanies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

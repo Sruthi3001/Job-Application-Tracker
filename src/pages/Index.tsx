@@ -79,8 +79,8 @@ const Index = () => {
             <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
               <Plus className="h-4 w-4" /> Add
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} title="View Profile">
-              <UserCircle className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="gap-1.5">
+              <UserCircle className="h-4 w-4" /> Profile
             </Button>
             <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
               <LogOut className="h-4 w-4" />

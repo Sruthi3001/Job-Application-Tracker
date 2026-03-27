@@ -9,7 +9,7 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3, UserCircle } from 'lucide-react';
+import { Plus, Search, Briefcase, LogOut, BarChart3, UserCircle, Home } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -73,11 +73,14 @@ const Index = () => {
             <h1 className="text-lg font-bold tracking-tight">JobTracker</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
-              <BarChart3 className="h-4 w-4" /> Analytics
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-1.5">
+              <Home className="h-4 w-4" /> Home
             </Button>
             <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
               <Plus className="h-4 w-4" /> Add
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
+              <BarChart3 className="h-4 w-4" /> Analytics
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="gap-1.5">
               <UserCircle className="h-4 w-4" /> Profile

@@ -8,33 +8,33 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 43 50% 92%;
+    --background: 0 60% 95%;
     --foreground: 0 0% 8%;
 
-    --card: 43 45% 96%;
+    --card: 0 50% 97%;
     --card-foreground: 0 0% 8%;
 
-    --popover: 43 45% 96%;
+    --popover: 0 50% 97%;
     --popover-foreground: 0 0% 8%;
 
-    --primary: 0 0% 8%;
-    --primary-foreground: 43 50% 95%;
+    --primary: 0 100% 68%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 43 30% 86%;
+    --secondary: 0 40% 90%;
     --secondary-foreground: 0 0% 8%;
 
-    --muted: 43 25% 88%;
+    --muted: 0 30% 92%;
     --muted-foreground: 0 0% 35%;
 
-    --accent: 43 40% 85%;
+    --accent: 0 45% 88%;
     --accent-foreground: 0 0% 10%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 43 30% 82%;
-    --input: 43 30% 82%;
-    --ring: 0 0% 8%;
+    --border: 0 35% 85%;
+    --input: 0 35% 85%;
+    --ring: 0 100% 68%;
 
     --radius: 0.75rem;
 
@@ -45,14 +45,14 @@ All colors MUST be HSL.
     --status-rejected: 0 72% 51%;
     --status-saved: 220 15% 50%;
 
-    --sidebar-background: 43 40% 90%;
+    --sidebar-background: 0 50% 93%;
     --sidebar-foreground: 0 0% 8%;
-    --sidebar-primary: 0 0% 8%;
-    --sidebar-primary-foreground: 43 50% 95%;
-    --sidebar-accent: 43 40% 85%;
+    --sidebar-primary: 0 100% 68%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 45% 88%;
     --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 43 30% 82%;
-    --sidebar-ring: 0 0% 8%;
+    --sidebar-border: 0 35% 85%;
+    --sidebar-ring: 0 100% 68%;
   }
 
   .dark {

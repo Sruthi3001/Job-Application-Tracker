@@ -8,7 +8,9 @@ import { cn } from '@/lib/utils';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const currentPath = location.pathname + location.search;
 
   return (
     <div className="min-h-screen bg-background">

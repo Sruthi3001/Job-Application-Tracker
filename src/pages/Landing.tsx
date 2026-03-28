@@ -26,16 +26,16 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             {user ? (
               <>
-                <Button variant="ghost" onClick={() => navigate('/')} className="gap-1.5">
+                <Button variant="ghost" onClick={() => navigate('/')} className={cn("gap-1.5", currentPath === '/' && "bg-primary/10 text-primary")}>
                   <Home className="h-4 w-4" /> Home
                 </Button>
-                <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-1.5">
+                <Button variant="ghost" onClick={() => navigate('/dashboard')} className={cn("gap-1.5", currentPath === '/dashboard' && "bg-primary/10 text-primary")}>
                   <Briefcase className="h-4 w-4" /> Dashboard
                 </Button>
-                <Button variant="ghost" onClick={() => navigate('/dashboard?tab=analytics')} className="gap-1.5">
+                <Button variant="ghost" onClick={() => navigate('/dashboard?tab=analytics')} className={cn("gap-1.5", currentPath === '/dashboard?tab=analytics' && "bg-primary/10 text-primary")}>
                   <BarChart3 className="h-4 w-4" /> Analytics
                 </Button>
-                <Button variant="ghost" onClick={() => navigate('/profile')} className="gap-1.5">
+                <Button variant="ghost" onClick={() => navigate('/profile')} className={cn("gap-1.5", currentPath === '/profile' && "bg-primary/10 text-primary")}>
                   <User className="h-4 w-4" /> Profile
                 </Button>
                 <Button variant="ghost" onClick={async () => {

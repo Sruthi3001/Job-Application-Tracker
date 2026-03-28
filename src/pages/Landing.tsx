@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Briefcase, ArrowRight, BarChart3, Shield, Layers } from 'lucide-react';
+import { Briefcase, ArrowRight, BarChart3, Shield, Layers, Home, User, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -18,11 +20,26 @@ export default function Landing() {
             </div>
             <span className="text-lg font-bold tracking-tight">JobTracker</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {user ? (
-              <Button onClick={() => navigate('/dashboard')} className="gap-1.5">
-                Go to Dashboard <ArrowRight className="h-4 w-4" />
-              </Button>
+              <>
+                <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-1.5">
+                  <Home className="h-4 w-4" /> Home
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/dashboard?tab=analytics')} className="gap-1.5">
+                  <BarChart3 className="h-4 w-4" /> Analytics
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/profile')} className="gap-1.5">
+                  <User className="h-4 w-4" /> Profile
+                </Button>
+                <Button variant="ghost" onClick={async () => {
+                  await supabase.auth.signOut();
+                  toast.success('Logged out');
+                  navigate('/');
+                }} className="gap-1.5">
+                  <LogOut className="h-4 w-4" /> Logout
+                </Button>
+              </>
             ) : (
               <>
                 <Button variant="ghost" onClick={() => navigate('/auth')}>

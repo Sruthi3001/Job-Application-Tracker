@@ -56,13 +56,6 @@ export default function Landing() {
             </Button>
           </div>
         )}
-        {user && (
-          <div className="flex justify-center gap-3 pt-2">
-            <Button size="lg" onClick={() => navigate('/dashboard')} className="gap-2">
-              Go to Dashboard <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </section>
 
       {/* Features */}

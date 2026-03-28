@@ -23,8 +23,11 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             {user ? (
               <>
-                <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-1.5">
+                <Button variant="ghost" onClick={() => navigate('/')} className="gap-1.5">
                   <Home className="h-4 w-4" /> Home
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-1.5">
+                  <Briefcase className="h-4 w-4" /> Dashboard
                 </Button>
                 <Button variant="ghost" onClick={() => navigate('/dashboard?tab=analytics')} className="gap-1.5">
                   <BarChart3 className="h-4 w-4" /> Analytics

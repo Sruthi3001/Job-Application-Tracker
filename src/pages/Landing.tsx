@@ -46,11 +46,23 @@ export default function Landing() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Stay organized throughout your job search. Track applications, monitor progress, and land your dream role faster.
         </p>
-        <div className="flex justify-center gap-3 pt-2">
-          <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/auth')} className="gap-2">
-            {user ? 'Go to Dashboard' : 'Start Tracking'} <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {!user && (
+          <div className="flex justify-center gap-3 pt-2">
+            <Button size="lg" variant="outline" onClick={() => navigate('/auth')} className="gap-2">
+              Sign In
+            </Button>
+            <Button size="lg" onClick={() => navigate('/auth')} className="gap-2">
+              Sign Up <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        {user && (
+          <div className="flex justify-center gap-3 pt-2">
+            <Button size="lg" onClick={() => navigate('/dashboard')} className="gap-2">
+              Go to Dashboard <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Features */}

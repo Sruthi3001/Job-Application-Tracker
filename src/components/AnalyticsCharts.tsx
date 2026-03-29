@@ -75,14 +75,15 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
           <CardTitle className="text-sm font-medium text-muted-foreground">Status Distribution</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center">
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+              <Pie data={statusData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value">
                 {statusData.map((entry, i) => (
                   <Cell key={i} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(0, 35%, 85%)' }} />
+              <recharts.Legend verticalAlign="bottom" height={36} formatter={(value: string) => <span style={{ fontSize: '12px' }}>{value}</span>} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>

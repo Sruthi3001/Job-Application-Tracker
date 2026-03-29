@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { JobApplication, STATUS_CONFIG, ApplicationStatus } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 
 const STATUS_COLORS: Record<string, string> = {
   saved: 'hsl(0, 30%, 70%)',
@@ -83,7 +83,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
                 ))}
               </Pie>
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(0, 35%, 85%)' }} />
-              <recharts.Legend verticalAlign="bottom" height={36} formatter={(value: string) => <span style={{ fontSize: '12px' }}>{value}</span>} />
+              <Legend verticalAlign="bottom" height={36} formatter={(value: string) => <span style={{ fontSize: '12px' }}>{value}</span>} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>

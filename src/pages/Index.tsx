@@ -9,13 +9,18 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3, UserCircle, Home } from 'lucide-react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home } from 'lucide-react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname + location.search;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -73,19 +78,26 @@ const Index = () => {
             <h1 className="text-lg font-bold tracking-tight">JobTracker</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-1.5">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className={cn("gap-1.5", currentPath === '/' && "bg-primary/10 text-primary")}>
               <Home className="h-4 w-4" /> Home
             </Button>
-            <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Add
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className={cn("gap-1.5", currentPath === '/dashboard' && "bg-primary/10 text-primary")}>
+              <Briefcase className="h-4 w-4" /> Dashboard
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
+            <Button variant="ghost" size="sm" onClick={() => { setShowAnalytics(!showAnalytics); navigate('/dashboard?tab=analytics'); }} className={cn("gap-1.5", currentPath === '/dashboard?tab=analytics' && "bg-primary/10 text-primary")}>
               <BarChart3 className="h-4 w-4" /> Analytics
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="gap-1.5">
-              <UserCircle className="h-4 w-4" /> Profile
+            <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className={cn("gap-1.5", currentPath === '/profile' && "bg-primary/10 text-primary")}>
+              <User className="h-4 w-4" /> Profile
             </Button>
-            <Button variant="ghost" size="icon" onClick={signOut} title="Sign out">
+            <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5" size="sm">
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+            <Button variant="ghost" size="icon" onClick={async () => {
+              await supabase.auth.signOut();
+              toast.success('Logged out');
+              navigate('/');
+            }} title="Sign out">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
 
 const STATUS_COLORS: Record<string, string> = {
-  saved: 'hsl(210, 14%, 60%)',
-  applied: 'hsl(217, 91%, 60%)',
-  screening: 'hsl(37, 90%, 51%)',
-  interview: 'hsl(262, 83%, 58%)',
-  offer: 'hsl(142, 71%, 45%)',
-  rejected: 'hsl(0, 72%, 51%)',
+  saved: 'hsl(0, 30%, 70%)',
+  applied: 'hsl(0, 60%, 65%)',
+  screening: 'hsl(0, 75%, 58%)',
+  interview: 'hsl(0, 85%, 52%)',
+  offer: 'hsl(0, 100%, 68%)',
+  rejected: 'hsl(0, 40%, 45%)',
 };
 
 export function AnalyticsCharts({ applications }: { applications: JobApplication[] }) {
@@ -44,8 +44,8 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
     const responded = applications.filter(a => ['screening', 'interview', 'offer', 'rejected'].includes(a.status)).length;
     const noResponse = applications.filter(a => ['saved', 'applied'].includes(a.status)).length;
     return [
-      { name: 'Responded', value: responded, color: 'hsl(142, 71%, 45%)' },
-      { name: 'No Response', value: noResponse, color: 'hsl(210, 14%, 60%)' },
+      { name: 'Responded', value: responded, color: 'hsl(0, 100%, 68%)' },
+      { name: 'No Response', value: noResponse, color: 'hsl(0, 30%, 70%)' },
     ];
   }, [applications]);
 
@@ -64,7 +64,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(220, 10%, 46%)" />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(220, 10%, 46%)" />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(214, 20%, 90%)' }} />
-              <Line type="monotone" dataKey="count" stroke="hsl(172, 66%, 40%)" strokeWidth={2} dot={{ fill: 'hsl(172, 66%, 40%)' }} />
+              <Line type="monotone" dataKey="count" stroke="hsl(0, 100%, 68%)" strokeWidth={2} dot={{ fill: 'hsl(0, 100%, 68%)' }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>

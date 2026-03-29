@@ -60,8 +60,8 @@ export default function Profile() {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
           <h1 className="text-lg font-bold tracking-tight">Profile</h1>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-1.5">
-            <ArrowLeft className="h-4 w-4" /> Homepage
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
+            <ArrowLeft className="h-4 w-4" /> Back
           </Button>
         </div>
       </header>

@@ -9,8 +9,11 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3, UserCircle, Home } from 'lucide-react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home } from 'lucide-react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();

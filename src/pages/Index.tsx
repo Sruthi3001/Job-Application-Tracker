@@ -27,7 +27,7 @@ const Index = () => {
   const [companyFilter, setCompanyFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const showAnalytics = location.search.includes('tab=analytics');
 
   const uniqueCompanies = useMemo(() => {
     const companies = [...new Set(applications.map(a => a.company))].sort();
@@ -84,7 +84,7 @@ const Index = () => {
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className={cn("gap-1.5", currentPath === '/dashboard' && "bg-primary/10 text-primary")}>
               <Briefcase className="h-4 w-4" /> Dashboard
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { setShowAnalytics(!showAnalytics); navigate('/dashboard?tab=analytics'); }} className={cn("gap-1.5", currentPath === '/dashboard?tab=analytics' && "bg-primary/10 text-primary")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(showAnalytics ? '/dashboard' : '/dashboard?tab=analytics')} className={cn("gap-1.5", showAnalytics && "bg-primary/10 text-primary")}>
               <BarChart3 className="h-4 w-4" /> Analytics
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className={cn("gap-1.5", currentPath === '/profile' && "bg-primary/10 text-primary")}>

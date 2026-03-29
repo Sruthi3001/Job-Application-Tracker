@@ -16,9 +16,11 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname + location.search;
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');

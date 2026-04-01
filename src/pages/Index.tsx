@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname + location.search;
+  const [displayName, setDisplayName] = useState<string>('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -28,6 +29,30 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const showAnalytics = location.search.includes('tab=analytics');
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const name =
+        data?.display_name ||
+        (user.user_metadata?.display_name as string | undefined) ||
+        (user.email ? user.email.split('@')[0] : '');
+
+      if (!cancelled) setDisplayName(name || '');
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const uniqueCompanies = useMemo(() => {
     const companies = [...new Set(applications.map(a => a.company))].sort();
@@ -106,7 +131,9 @@ const Index = () => {
 
       <main className="container max-w-6xl mx-auto px-4 py-8 space-y-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {displayName ? `Hi, ${displayName}` : 'Hi'}
+          </h2>
           <p className="text-muted-foreground mt-1">Track and manage your job applications</p>
         </div>
 

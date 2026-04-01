@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { JobApplication, STATUS_CONFIG, ApplicationStatus } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -13,20 +14,72 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function AnalyticsCharts({ applications }: { applications: JobApplication[] }) {
+  const [monthFilter, setMonthFilter] = useState<string>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [responseFilter, setResponseFilter] = useState<'all' | 'responded' | 'no-response'>('all');
+
+  const monthOptions = useMemo(() => {
+    const months = new Set<string>();
+    for (const a of applications) {
+      const d = new Date(a.dateApplied);
+      if (Number.isNaN(d.getTime())) continue;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      months.add(key);
+    }
+    return Array.from(months)
+      .sort((a, b) => b.localeCompare(a))
+      .map(key => {
+        const [y, m] = key.split('-').map(Number);
+        const label = new Date(y, (m || 1) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        return { key, label };
+      });
+  }, [applications]);
+
+  const roleOptions = useMemo(() => {
+    const roles = [...new Set(applications.map(a => a.role).filter(Boolean))];
+    roles.sort((a, b) => a.localeCompare(b));
+    return roles;
+  }, [applications]);
+
+  const filteredApps = useMemo(() => {
+    return applications.filter(a => {
+      const matchesMonth =
+        monthFilter === 'all'
+          ? true
+          : (() => {
+              const d = new Date(a.dateApplied);
+              if (Number.isNaN(d.getTime())) return false;
+              const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              return key === monthFilter;
+            })();
+
+      const matchesRole = roleFilter === 'all' || a.role === roleFilter;
+      const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
+
+      const isResponded = ['screening', 'interview', 'offer', 'rejected'].includes(a.status);
+      const matchesResponse =
+        responseFilter === 'all' ? true : responseFilter === 'responded' ? isResponded : !isResponded;
+
+      return matchesMonth && matchesRole && matchesStatus && matchesResponse;
+    });
+  }, [applications, monthFilter, roleFilter, statusFilter, responseFilter]);
+
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
-    applications.forEach(a => { counts[a.status] = (counts[a.status] || 0) + 1; });
+    filteredApps.forEach(a => { counts[a.status] = (counts[a.status] || 0) + 1; });
     return Object.entries(counts).map(([status, count]) => ({
       name: STATUS_CONFIG[status as ApplicationStatus]?.label || status,
       value: count,
       color: STATUS_COLORS[status] || '#888',
     }));
-  }, [applications]);
+  }, [filteredApps]);
 
   const timelineData = useMemo(() => {
     const byWeek: Record<string, number> = {};
-    applications.forEach(a => {
+    filteredApps.forEach(a => {
       const d = new Date(a.dateApplied);
+      if (Number.isNaN(d.getTime())) return;
       const weekStart = new Date(d);
       weekStart.setDate(d.getDate() - d.getDay());
       const key = weekStart.toISOString().split('T')[0];
@@ -38,21 +91,92 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         count,
       }));
-  }, [applications]);
+  }, [filteredApps]);
 
   const responseData = useMemo(() => {
-    const responded = applications.filter(a => ['screening', 'interview', 'offer', 'rejected'].includes(a.status)).length;
-    const noResponse = applications.filter(a => ['saved', 'applied'].includes(a.status)).length;
+    const responded = filteredApps.filter(a => ['screening', 'interview', 'offer', 'rejected'].includes(a.status)).length;
+    const noResponse = filteredApps.filter(a => ['saved', 'applied'].includes(a.status)).length;
     return [
       { name: 'Responded', value: responded, color: 'hsl(0, 100%, 68%)' },
       { name: 'No Response', value: noResponse, color: 'hsl(0, 30%, 70%)' },
     ];
-  }, [applications]);
+  }, [filteredApps]);
 
   if (applications.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+            <Select value={monthFilter} onValueChange={setMonthFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All months</SelectItem>
+                {monthOptions.map(m => (
+                  <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All roles</SelectItem>
+                {roleOptions.map(r => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="saved">Saved</SelectItem>
+                <SelectItem value="applied">Applied</SelectItem>
+                <SelectItem value="screening">Screening</SelectItem>
+                <SelectItem value="interview">Interview</SelectItem>
+                <SelectItem value="offer">Offer</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={responseFilter} onValueChange={(v) => setResponseFilter(v as typeof responseFilter)}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Response rate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All (responded + no response)</SelectItem>
+                <SelectItem value="responded">Responded only</SelectItem>
+                <SelectItem value="no-response">No response only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Showing <span className="font-medium text-foreground">{filteredApps.length}</span> of{' '}
+            <span className="font-medium text-foreground">{applications.length}</span> applications.
+          </p>
+        </CardContent>
+      </Card>
+
+      {filteredApps.length === 0 ? (
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            No applications match the selected filters.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Applications Over Time</CardTitle>
@@ -108,6 +232,8 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
           </ResponsiveContainer>
         </CardContent>
       </Card>
+        </div>
+      )}
     </div>
   );
 }

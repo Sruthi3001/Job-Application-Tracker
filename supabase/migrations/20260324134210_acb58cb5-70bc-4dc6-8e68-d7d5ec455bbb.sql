@@ -36,7 +36,7 @@ CREATE TABLE public.applications (
   company TEXT NOT NULL,
   role TEXT NOT NULL,
   location TEXT NOT NULL DEFAULT '',
-  status TEXT NOT NULL DEFAULT 'applied' CHECK (status IN ('saved', 'applied', 'screening', 'interview', 'offer', 'rejected')),
+  status TEXT NOT NULL DEFAULT 'applied' CHECK (status IN ('saved', 'applied', 'under_review', 'screening', 'interview', 'offer', 'rejected')),
   date_applied DATE NOT NULL DEFAULT CURRENT_DATE,
   url TEXT,
   notes TEXT,

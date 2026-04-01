@@ -82,7 +82,7 @@ export function useApplications() {
       resume_url,
       resume_name,
     });
-    if (error) { toast.error('Failed to add application'); console.error(error); }
+    if (error) { toast.error(error.message || 'Failed to add application'); console.error(error); }
     else { toast.success('Application added'); await fetchApps(); }
   };
 
@@ -108,7 +108,7 @@ export function useApplications() {
     }
 
     const { error } = await supabase.from('applications').update(dbUpdates).eq('id', id);
-    if (error) { toast.error('Failed to update'); console.error(error); }
+    if (error) { toast.error(error.message || 'Failed to update'); console.error(error); }
     else { toast.success('Updated'); await fetchApps(); }
   };
 

@@ -21,16 +21,14 @@ type DbApp = {
 };
 
 function normalizeStatusFromDb(status: string): ApplicationStatus {
-  if (status === 'under review' || status === 'under-review') {
-    return 'under_review';
+  if (status === 'saved' || status === 'applied' || status === 'screening' || status === 'interview' || status === 'offer' || status === 'rejected') {
+    return status;
   }
-  return status as ApplicationStatus;
-}
-
-function candidateDbStatuses(status: ApplicationStatus): string[] {
-  if (status !== 'under_review') return [status];
-  // Support environments where DB check constraint was created with different spellings.
-  return ['under_review', 'under review', 'under-review'];
+  // Handle legacy statuses that may still exist in DB.
+  if (status === 'under_review' || status === 'under review' || status === 'under-review') {
+    return 'applied';
+  }
+  return 'applied';
 }
 
 function toJobApp(row: DbApp): JobApplication {
@@ -81,29 +79,20 @@ export function useApplications() {
       resume_name = resumeFile.name;
     }
 
-    let error: { message?: string } | null = null;
-    const statusCandidates = candidateDbStatuses(app.status);
-    for (const statusCandidate of statusCandidates) {
-      const result = await supabase.from('applications').insert({
-        user_id: user.id,
-        company: app.company,
-        role: app.role,
-        location: app.location,
-        status: statusCandidate,
-        date_applied: app.dateApplied,
-        url: app.url || null,
-        notes: app.notes || null,
-        salary: app.salary || null,
-        type: app.type,
-        resume_url,
-        resume_name,
-      });
-      if (!result.error) {
-        error = null;
-        break;
-      }
-      error = result.error;
-    }
+    const { error } = await supabase.from('applications').insert({
+      user_id: user.id,
+      company: app.company,
+      role: app.role,
+      location: app.location,
+      status: app.status,
+      date_applied: app.dateApplied,
+      url: app.url || null,
+      notes: app.notes || null,
+      salary: app.salary || null,
+      type: app.type,
+      resume_url,
+      resume_name,
+    });
     if (error) { toast.error(error.message || 'Failed to add application'); console.error(error); }
     else { toast.success('Application added'); await fetchApps(); }
   };
@@ -114,8 +103,7 @@ export function useApplications() {
     if (updates.company !== undefined) dbUpdates.company = updates.company;
     if (updates.role !== undefined) dbUpdates.role = updates.role;
     if (updates.location !== undefined) dbUpdates.location = updates.location;
-    const statusCandidates = updates.status ? candidateDbStatuses(updates.status) : [];
-    if (updates.status !== undefined) dbUpdates.status = statusCandidates[0];
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
     if (updates.dateApplied !== undefined) dbUpdates.date_applied = updates.dateApplied;
     if (updates.url !== undefined) dbUpdates.url = updates.url || null;
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes || null;
@@ -130,23 +118,7 @@ export function useApplications() {
       dbUpdates.resume_name = resumeFile.name;
     }
 
-    let error: { message?: string } | null = null;
-    if (statusCandidates.length > 0) {
-      for (const statusCandidate of statusCandidates) {
-        const result = await supabase
-          .from('applications')
-          .update({ ...dbUpdates, status: statusCandidate })
-          .eq('id', id);
-        if (!result.error) {
-          error = null;
-          break;
-        }
-        error = result.error;
-      }
-    } else {
-      const result = await supabase.from('applications').update(dbUpdates).eq('id', id);
-      error = result.error;
-    }
+    const { error } = await supabase.from('applications').update(dbUpdates).eq('id', id);
     if (error) { toast.error(error.message || 'Failed to update'); console.error(error); }
     else { toast.success('Updated'); await fetchApps(); }
   };

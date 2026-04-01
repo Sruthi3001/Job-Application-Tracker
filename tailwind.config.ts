@@ -62,7 +62,6 @@ export default {
         },
         status: {
           applied: "hsl(var(--status-applied))",
-          "under-review": "hsl(var(--status-under-review))",
           screening: "hsl(var(--status-screening))",
           interview: "hsl(var(--status-interview))",
           offer: "hsl(var(--status-offer))",

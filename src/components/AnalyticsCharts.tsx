@@ -7,7 +7,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 const STATUS_COLORS: Record<string, string> = {
   saved: 'hsl(0, 30%, 70%)',
   applied: 'hsl(0, 60%, 65%)',
-  under_review: 'hsl(205, 82%, 56%)',
   screening: 'hsl(0, 75%, 58%)',
   interview: 'hsl(0, 85%, 52%)',
   offer: 'hsl(0, 100%, 68%)',
@@ -58,7 +57,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
       const matchesRole = roleFilter === 'all' || a.role === roleFilter;
       const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
 
-      const isResponded = ['under_review', 'screening', 'interview', 'offer', 'rejected'].includes(a.status);
+      const isResponded = ['screening', 'interview', 'offer', 'rejected'].includes(a.status);
       const matchesResponse =
         responseFilter === 'all' ? true : responseFilter === 'responded' ? isResponded : !isResponded;
 
@@ -95,7 +94,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
   }, [filteredApps]);
 
   const responseData = useMemo(() => {
-    const responded = filteredApps.filter(a => ['under_review', 'screening', 'interview', 'offer', 'rejected'].includes(a.status)).length;
+    const responded = filteredApps.filter(a => ['screening', 'interview', 'offer', 'rejected'].includes(a.status)).length;
     const noResponse = filteredApps.filter(a => ['saved', 'applied'].includes(a.status)).length;
     return [
       { name: 'Responded', value: responded, color: 'hsl(0, 100%, 68%)' },
@@ -145,7 +144,6 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="saved">Saved</SelectItem>
                 <SelectItem value="applied">Applied</SelectItem>
-                <SelectItem value="under_review">Under Review</SelectItem>
                 <SelectItem value="screening">Screening</SelectItem>
                 <SelectItem value="interview">Interview</SelectItem>
                 <SelectItem value="offer">Offer</SelectItem>

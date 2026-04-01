@@ -39,6 +39,7 @@ All colors MUST be HSL.
     --radius: 0.75rem;
 
     --status-applied: 217 91% 60%;
+    --status-under-review: 205 82% 56%;
     --status-screening: 37 90% 51%;
     --status-interview: 262 83% 58%;
     --status-offer: 142 71% 45%;

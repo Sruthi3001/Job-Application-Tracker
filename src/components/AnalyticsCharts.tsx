@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { formatLocalYmd, formatMonthKey, parseApplicationDateLocal } from '@/lib/dateUtils';
 import { JobApplication, STATUS_CONFIG, ApplicationStatus } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,10 +23,9 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
   const monthOptions = useMemo(() => {
     const months = new Set<string>();
     for (const a of applications) {
-      const d = new Date(a.dateApplied);
-      if (Number.isNaN(d.getTime())) continue;
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      months.add(key);
+      const d = parseApplicationDateLocal(a.dateApplied);
+      if (!d) continue;
+      months.add(formatMonthKey(d));
     }
     return Array.from(months)
       .sort((a, b) => b.localeCompare(a))
@@ -48,10 +48,9 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         monthFilter === 'all'
           ? true
           : (() => {
-              const d = new Date(a.dateApplied);
-              if (Number.isNaN(d.getTime())) return false;
-              const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-              return key === monthFilter;
+              const d = parseApplicationDateLocal(a.dateApplied);
+              if (!d) return false;
+              return formatMonthKey(d) === monthFilter;
             })();
 
       const matchesRole = roleFilter === 'all' || a.role === roleFilter;
@@ -76,21 +75,34 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
   }, [filteredApps]);
 
   const timelineData = useMemo(() => {
-    const byWeek: Record<string, number> = {};
+    const byDay: Record<string, number> = {};
     filteredApps.forEach(a => {
-      const d = new Date(a.dateApplied);
-      if (Number.isNaN(d.getTime())) return;
-      const weekStart = new Date(d);
-      weekStart.setDate(d.getDate() - d.getDay());
-      const key = weekStart.toISOString().split('T')[0];
-      byWeek[key] = (byWeek[key] || 0) + 1;
+      const d = parseApplicationDateLocal(a.dateApplied);
+      if (!d) return;
+      const key = formatLocalYmd(d);
+      byDay[key] = (byDay[key] || 0) + 1;
     });
-    return Object.entries(byWeek)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, count]) => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    const sorted = Object.entries(byDay).sort(([a], [b]) => a.localeCompare(b));
+    const years = new Set(sorted.map(([ymd]) => Number(ymd.slice(0, 4))));
+    const multiYear = years.size > 1;
+    return sorted.map(([ymd, count]) => {
+      const [y, m, day] = ymd.split('-').map(Number);
+      const local = new Date(y, (m || 1) - 1, day || 1);
+      return {
+        date: local.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          ...(multiYear ? { year: '2-digit' } : {}),
+        }),
+        fullDate: local.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
         count,
-      }));
+      };
+    });
   }, [filteredApps]);
 
   const responseData = useMemo(() => {
@@ -179,15 +191,25 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Applications Over Time</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Applications by date applied</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={timelineData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 90%)" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(220, 10%, 46%)" />
+              <XAxis
+                dataKey="date"
+                minTickGap={12}
+                tick={{ fontSize: 11 }}
+                stroke="hsl(220, 10%, 46%)"
+              />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(220, 10%, 46%)" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(214, 20%, 90%)' }} />
+              <Tooltip
+                contentStyle={{ borderRadius: '8px', border: '1px solid hsl(214, 20%, 90%)' }}
+                labelFormatter={(_, payload) =>
+                  (payload?.[0]?.payload as { fullDate?: string } | undefined)?.fullDate ?? ''
+                }
+              />
               <Line type="monotone" dataKey="count" stroke="hsl(0, 100%, 68%)" strokeWidth={2} dot={{ fill: 'hsl(0, 100%, 68%)' }} />
             </LineChart>
           </ResponsiveContainer>

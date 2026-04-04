@@ -15,9 +15,9 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-/** Trim + lowercase so "Acme", "acme", and "Acme " dedupe to one option. */
-function companyDedupeKey(name: string): string {
-  return name.trim().toLowerCase();
+/** Trim + lowercase so filter options dedupe (e.g. "Remote" vs "remote "). */
+function dedupeKey(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 const Index = () => {
@@ -31,6 +31,7 @@ const Index = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [companyFilter, setCompanyFilter] = useState<string>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const showAnalytics = location.search.includes('tab=analytics');
@@ -67,7 +68,20 @@ const Index = () => {
     const byKey = new Map<string, string>();
     for (const a of applications) {
       const label = (a.company ?? '').trim();
-      const key = companyDedupeKey(label);
+      const key = dedupeKey(label);
+      if (!key) continue;
+      if (!byKey.has(key)) {
+        byKey.set(key, label);
+      }
+    }
+    return Array.from(byKey.values()).sort((a, b) => a.localeCompare(b));
+  }, [applications]);
+
+  const uniqueLocations = useMemo(() => {
+    const byKey = new Map<string, string>();
+    for (const a of applications) {
+      const label = (a.location ?? '').trim();
+      const key = dedupeKey(label);
       if (!key) continue;
       if (!byKey.has(key)) {
         byKey.set(key, label);
@@ -78,14 +92,20 @@ const Index = () => {
 
   const filtered = useMemo(() => {
     return applications.filter(a => {
-      const matchesSearch = !search || a.company.toLowerCase().includes(search.toLowerCase()) || a.role.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch =
+        !search ||
+        a.company.toLowerCase().includes(search.toLowerCase()) ||
+        a.role.toLowerCase().includes(search.toLowerCase()) ||
+        a.location.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
       const matchesType = typeFilter === 'all' || a.type === typeFilter;
       const matchesCompany =
-        companyFilter === 'all' || companyDedupeKey(a.company) === companyDedupeKey(companyFilter);
-      return matchesSearch && matchesStatus && matchesType && matchesCompany;
+        companyFilter === 'all' || dedupeKey(a.company) === dedupeKey(companyFilter);
+      const matchesLocation =
+        locationFilter === 'all' || dedupeKey(a.location) === dedupeKey(locationFilter);
+      return matchesSearch && matchesStatus && matchesType && matchesCompany && matchesLocation;
     });
-  }, [applications, search, statusFilter, typeFilter, companyFilter]);
+  }, [applications, search, statusFilter, typeFilter, companyFilter, locationFilter]);
 
   if (authLoading) {
     return (
@@ -162,7 +182,7 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search by company or role..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder="Search company, role, or location..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[150px]">
@@ -197,7 +217,18 @@ const Index = () => {
             <SelectContent>
               <SelectItem value="all">All companies</SelectItem>
               {uniqueCompanies.map(c => (
-                <SelectItem key={companyDedupeKey(c)} value={c}>{c}</SelectItem>
+                <SelectItem key={dedupeKey(c)} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All locations</SelectItem>
+              {uniqueLocations.map(loc => (
+                <SelectItem key={dedupeKey(loc)} value={loc}>{loc}</SelectItem>
               ))}
             </SelectContent>
           </Select>

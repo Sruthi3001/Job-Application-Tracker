@@ -118,7 +118,7 @@ export default function Auth() {
   if (recoverySession) {
     if (!user) {
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="flex min-h-[100dvh] items-center justify-center bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
               <CardTitle>Reset password</CardTitle>
@@ -133,7 +133,7 @@ export default function Auth() {
     }
 
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
@@ -199,7 +199,7 @@ export default function Auth() {
 
   if (showForgotPassword && !isSignUp) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
@@ -246,7 +246,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center">

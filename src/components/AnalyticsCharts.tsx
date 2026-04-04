@@ -123,9 +123,9 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
           <CardTitle className="text-sm font-medium text-muted-foreground">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Select value={monthFilter} onValueChange={setMonthFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="h-10 w-full sm:w-[180px]">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
@@ -137,7 +137,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
             </Select>
 
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="h-10 w-full sm:w-[220px]">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
@@ -149,7 +149,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
             </Select>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="h-10 w-full sm:w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
             </Select>
 
             <Select value={responseFilter} onValueChange={(v) => setResponseFilter(v as typeof responseFilter)}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="h-10 w-full sm:w-[200px]">
                 <SelectValue placeholder="Response rate" />
               </SelectTrigger>
               <SelectContent>
@@ -193,7 +193,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Applications by date applied</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={timelineData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 90%)" />
@@ -220,7 +220,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Status Distribution</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center">
+        <CardContent className="flex min-w-0 items-center justify-center">
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie data={statusData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="value">
@@ -239,7 +239,7 @@ export function AnalyticsCharts({ applications }: { applications: JobApplication
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Response Rate</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={responseData} layout="vertical">
               <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(220, 10%, 46%)" />

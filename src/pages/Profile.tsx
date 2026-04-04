@@ -77,8 +77,8 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
+        <div className="container max-w-6xl mx-auto flex min-h-14 items-center justify-between px-3 py-2 sm:h-16 sm:px-4 sm:py-0">
           <h1 className="text-lg font-bold tracking-tight">Profile</h1>
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
             <ArrowLeft className="h-4 w-4" /> Back
@@ -86,7 +86,7 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="container max-w-lg mx-auto px-4 py-10 space-y-6">
+      <main className="container max-w-lg mx-auto min-w-0 px-3 py-8 space-y-6 sm:px-4 sm:py-10">
         <div className="flex flex-col items-center gap-3">
           <Avatar className="h-20 w-20 text-2xl">
             <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">

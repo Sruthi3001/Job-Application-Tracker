@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,6 +14,7 @@ import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { MobileDrawerNav } from '@/components/MobileDrawerNav';
 
 /** Trim + lowercase so filter options dedupe (e.g. "Remote" vs "remote "). */
 function dedupeKey(value: string): string {
@@ -35,6 +36,31 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const showAnalytics = location.search.includes('tab=analytics');
+
+  const openAddDialog = useCallback(() => {
+    setEditing(null);
+    setDialogOpen(true);
+  }, []);
+
+  const mobileNavItems = useMemo(() => {
+    const analyticsPath = showAnalytics ? '/dashboard' : '/dashboard?tab=analytics';
+    return [
+      { label: 'Home', icon: <Home className="h-4 w-4" />, onSelect: () => navigate('/') },
+      { label: 'Dashboard', icon: <Briefcase className="h-4 w-4" />, onSelect: () => navigate('/dashboard') },
+      { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, onSelect: () => navigate(analyticsPath) },
+      { label: 'Profile', icon: <User className="h-4 w-4" />, onSelect: () => navigate('/profile') },
+      { label: 'Add application', icon: <Plus className="h-4 w-4" />, onSelect: openAddDialog },
+      {
+        label: 'Sign out',
+        icon: <LogOut className="h-4 w-4" />,
+        onSelect: async () => {
+          await supabase.auth.signOut();
+          toast.success('Logged out');
+          navigate('/');
+        },
+      },
+    ];
+  }, [navigate, showAnalytics, openAddDialog]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -132,60 +158,61 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-6xl mx-auto flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
+        <div className="container max-w-6xl mx-auto flex min-h-14 sm:min-h-16 items-center justify-between gap-2 px-3 sm:px-4 py-2 sm:py-0">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+            <div className="h-8 w-8 shrink-0 rounded-lg bg-primary flex items-center justify-center">
               <Briefcase className="h-4 w-4 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-bold tracking-tight">JobTracker</h1>
+            <h1 className="truncate text-base font-bold tracking-tight sm:text-lg">JobTracker</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <nav className="hidden md:flex shrink-0 flex-wrap items-center justify-end gap-1" aria-label="Main">
             <Button variant="ghost" size="sm" onClick={() => navigate('/')} className={cn("gap-1.5", currentPath === '/' && "bg-primary/10 text-primary")}>
-              <Home className="h-4 w-4" /> Home
+              <Home className="h-4 w-4 shrink-0" /> Home
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className={cn("gap-1.5", currentPath === '/dashboard' && "bg-primary/10 text-primary")}>
-              <Briefcase className="h-4 w-4" /> Dashboard
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className={cn("gap-1.5", currentPath === '/dashboard' && !showAnalytics && "bg-primary/10 text-primary")}>
+              <Briefcase className="h-4 w-4 shrink-0" /> Dashboard
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate(showAnalytics ? '/dashboard' : '/dashboard?tab=analytics')} className={cn("gap-1.5", showAnalytics && "bg-primary/10 text-primary")}>
-              <BarChart3 className="h-4 w-4" /> Analytics
+              <BarChart3 className="h-4 w-4 shrink-0" /> Analytics
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className={cn("gap-1.5", currentPath === '/profile' && "bg-primary/10 text-primary")}>
-              <User className="h-4 w-4" /> Profile
+              <User className="h-4 w-4 shrink-0" /> Profile
             </Button>
-            <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-1.5" size="sm">
-              <Plus className="h-4 w-4" /> Add
+            <Button onClick={openAddDialog} className="gap-1.5" size="sm">
+              <Plus className="h-4 w-4 shrink-0" /> Add
             </Button>
             <Button variant="ghost" size="icon" onClick={async () => {
               await supabase.auth.signOut();
               toast.success('Logged out');
               navigate('/');
-            }} title="Sign out">
+            }} title="Sign out" aria-label="Sign out">
               <LogOut className="h-4 w-4" />
             </Button>
-          </div>
+          </nav>
+          <MobileDrawerNav items={mobileNavItems} title="JobTracker" />
         </div>
       </header>
 
-      <main className="container max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">
+      <main className="container max-w-6xl mx-auto min-w-0 px-3 pb-10 pt-6 sm:px-4 sm:py-8 space-y-6">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold tracking-tight break-words sm:text-2xl">
             {displayName ? `Hi, ${displayName}` : 'Hi'}
           </h2>
-          <p className="text-muted-foreground mt-1">Track and manage your job applications</p>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">Track and manage your job applications</p>
         </div>
 
         <StatsCards applications={applications} />
 
         {showAnalytics && <AnalyticsCharts applications={applications} />}
 
-        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="relative min-w-0 flex-1 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search company, role, or location..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="h-10 w-full sm:w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -199,7 +226,7 @@ const Index = () => {
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="h-10 w-full sm:w-[150px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
@@ -211,7 +238,7 @@ const Index = () => {
             </SelectContent>
           </Select>
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="h-10 w-full sm:w-[150px]">
               <SelectValue placeholder="Company" />
             </SelectTrigger>
             <SelectContent>
@@ -222,7 +249,7 @@ const Index = () => {
             </SelectContent>
           </Select>
           <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="h-10 w-full sm:w-[160px]">
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>

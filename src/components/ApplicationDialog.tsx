@@ -39,12 +39,12 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{application ? 'Edit Application' : 'Add Application'}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="company">Company *</Label>
               <Input id="company" value={form.company} onChange={e => set('company', e.target.value)} placeholder="e.g. Google" />
@@ -54,7 +54,7 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
               <Input id="role" value={form.role} onChange={e => set('role', e.target.value)} placeholder="e.g. SWE Intern" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="location">Location</Label>
               <Input id="location" value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Remote" />
@@ -64,7 +64,7 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
               <Input id="dateApplied" type="date" value={form.dateApplied} onChange={e => set('dateApplied', e.target.value)} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={v => set('status', v)}>

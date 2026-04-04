@@ -22,8 +22,8 @@ export function ApplicationTable({ applications, onEdit, onDelete, onStatusChang
   }
 
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
-      <Table>
+    <div className="touch-pan-x rounded-xl border bg-card shadow-sm overflow-x-auto [-webkit-overflow-scrolling:touch]">
+      <Table className="min-w-[44rem]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="font-semibold">Company</TableHead>
@@ -47,7 +47,7 @@ export function ApplicationTable({ applications, onEdit, onDelete, onStatusChang
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

@@ -15,6 +15,11 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
+/** Trim + lowercase so "Acme", "acme", and "Acme " dedupe to one option. */
+function companyDedupeKey(name: string): string {
+  return name.trim().toLowerCase();
+}
+
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
@@ -29,6 +34,10 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
   const showAnalytics = location.search.includes('tab=analytics');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!user) return;
@@ -55,8 +64,16 @@ const Index = () => {
   }, [user]);
 
   const uniqueCompanies = useMemo(() => {
-    const companies = [...new Set(applications.map(a => a.company))].sort();
-    return companies;
+    const byKey = new Map<string, string>();
+    for (const a of applications) {
+      const label = (a.company ?? '').trim();
+      const key = companyDedupeKey(label);
+      if (!key) continue;
+      if (!byKey.has(key)) {
+        byKey.set(key, label);
+      }
+    }
+    return Array.from(byKey.values()).sort((a, b) => a.localeCompare(b));
   }, [applications]);
 
   const filtered = useMemo(() => {
@@ -64,7 +81,8 @@ const Index = () => {
       const matchesSearch = !search || a.company.toLowerCase().includes(search.toLowerCase()) || a.role.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
       const matchesType = typeFilter === 'all' || a.type === typeFilter;
-      const matchesCompany = companyFilter === 'all' || a.company === companyFilter;
+      const matchesCompany =
+        companyFilter === 'all' || companyDedupeKey(a.company) === companyDedupeKey(companyFilter);
       return matchesSearch && matchesStatus && matchesType && matchesCompany;
     });
   }, [applications, search, statusFilter, typeFilter, companyFilter]);
@@ -179,7 +197,7 @@ const Index = () => {
             <SelectContent>
               <SelectItem value="all">All companies</SelectItem>
               {uniqueCompanies.map(c => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={companyDedupeKey(c)} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
           </Select>

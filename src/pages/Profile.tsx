@@ -23,9 +23,19 @@ export default function Profile() {
       .from('profiles')
       .select('display_name')
       .eq('user_id', user.id)
-      .single()
-      .then(({ data }) => {
-        if (data?.display_name) setDisplayName(data.display_name);
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) console.error(error);
+        const fromDb = data?.display_name?.trim();
+        if (fromDb) {
+          setDisplayName(fromDb);
+        } else {
+          const fallback =
+            (user.user_metadata?.display_name as string | undefined)?.trim() ||
+            user.email?.split('@')[0] ||
+            '';
+          setDisplayName(fallback);
+        }
         setLoading(false);
       });
   }, [user]);
@@ -40,18 +50,28 @@ export default function Profile() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const initials = displayName
-    ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const trimmedName = displayName.trim();
+  const canSave = trimmedName.length > 0;
+
+  const initials = trimmedName
+    ? trimmedName.split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : user.email?.charAt(0).toUpperCase() || 'U';
 
   const handleSave = async () => {
+    if (!canSave) {
+      toast.error('Display name cannot be empty');
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: displayName })
+      .update({ display_name: trimmedName })
       .eq('user_id', user.id);
     if (error) toast.error('Failed to update profile');
-    else toast.success('Profile updated');
+    else {
+      setDisplayName(trimmedName);
+      toast.success('Profile updated');
+    }
     setSaving(false);
   };
 
@@ -90,7 +110,8 @@ export default function Profile() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="displayName">Display Name</Label>
+              <Label htmlFor="displayName">Display name</Label>
+              <p className="text-xs text-muted-foreground">Required — shown on your dashboard greeting.</p>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -100,10 +121,13 @@ export default function Profile() {
                   placeholder="Your name"
                   className="pl-9"
                   disabled={loading}
+                  required
+                  minLength={1}
+                  aria-invalid={!canSave}
                 />
               </div>
             </div>
-            <Button onClick={handleSave} disabled={saving || loading} className="w-full gap-1.5">
+            <Button onClick={handleSave} disabled={saving || loading || !canSave} className="w-full gap-1.5">
               <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </CardContent>

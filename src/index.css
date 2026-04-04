@@ -105,3 +105,34 @@ h1, h2, h3, h4, h5, h6 {
     @apply bg-background text-foreground;
   }
 }
+
+/* Visible vertical scrollbar on the right for select dropdowns (filters, etc.) */
+@layer utilities {
+  .select-options-scrollbar {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.45) hsl(var(--muted) / 0.5);
+  }
+
+  .select-options-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .select-options-scrollbar::-webkit-scrollbar-track {
+    margin: 4px 0;
+    background: hsl(var(--muted) / 0.45);
+    border-radius: 9999px;
+  }
+
+  .select-options-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .select-options-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.65);
+    background-clip: padding-box;
+  }
+}

@@ -9,12 +9,22 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home } from 'lucide-react';
+import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home, Trash2 } from 'lucide-react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileDrawerNav } from '@/components/MobileDrawerNav';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 /** Trim + lowercase so filter options dedupe (e.g. "Remote" vs "remote "). */
 function dedupeKey(value: string): string {
@@ -23,7 +33,7 @@ function dedupeKey(value: string): string {
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
+  const { applications, loading, addApplication, updateApplication, deleteApplication, deleteApplications } = useApplications();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname + location.search;
@@ -35,6 +45,8 @@ const Index = () => {
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const showAnalytics = location.search.includes('tab=analytics');
 
   const openAddDialog = useCallback(() => {
@@ -156,6 +168,22 @@ const Index = () => {
   const handleDelete = (id: string) => deleteApplication(id);
   const handleStatusChange = (id: string, status: ApplicationStatus) => updateApplication(id, { status });
 
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+  const toggleSelectAll = (checked: boolean) => {
+    const visibleIds = filtered.map(a => a.id);
+    setSelectedIds(prev =>
+      checked ? Array.from(new Set([...prev, ...visibleIds])) : prev.filter(id => !visibleIds.includes(id))
+    );
+  };
+
+  const confirmBulkDelete = async () => {
+    await deleteApplications(selectedIds);
+    setSelectedIds([]);
+    setBulkDeleteOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">
@@ -261,14 +289,49 @@ const Index = () => {
           </Select>
         </div>
 
+        {selectedIds.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm">
+            <p className="text-sm font-medium">
+              {selectedIds.length} selected
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Clear</Button>
+              <Button variant="destructive" size="sm" className="gap-1.5" onClick={() => setBulkDeleteOpen(true)}>
+                <Trash2 className="h-4 w-4" /> Delete selected
+              </Button>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="rounded-xl border bg-card p-12 text-center">
             <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto" />
           </div>
         ) : (
-          <ApplicationTable applications={filtered} onEdit={handleEdit} onDelete={handleDelete} onStatusChange={handleStatusChange} />
+          <ApplicationTable
+            applications={filtered}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onToggleSelectAll={toggleSelectAll}
+          />
         )}
       </main>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.length} application{selectedIds.length > 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ApplicationDialog open={dialogOpen} onOpenChange={setDialogOpen} application={editing} onSave={handleSave} />
     </div>

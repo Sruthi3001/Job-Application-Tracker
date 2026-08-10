@@ -1,6 +1,7 @@
 import { JobApplication, ApplicationStatus, STATUS_CONFIG } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Pencil, Trash2, ExternalLink } from 'lucide-react';
@@ -10,9 +11,20 @@ interface Props {
   onEdit: (app: JobApplication) => void;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: ApplicationStatus) => void;
+  selectedIds?: string[];
+  onToggleSelect?: (id: string) => void;
+  onToggleSelectAll?: (checked: boolean) => void;
 }
 
-export function ApplicationTable({ applications, onEdit, onDelete, onStatusChange }: Props) {
+export function ApplicationTable({
+  applications,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  selectedIds = [],
+  onToggleSelect,
+  onToggleSelectAll,
+}: Props) {
   if (applications.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-12 text-center">
@@ -21,11 +33,24 @@ export function ApplicationTable({ applications, onEdit, onDelete, onStatusChang
     );
   }
 
+  const selectable = Boolean(onToggleSelect && onToggleSelectAll);
+  const allSelected = selectable && applications.every(a => selectedIds.includes(a.id));
+  const someSelected = selectable && !allSelected && applications.some(a => selectedIds.includes(a.id));
+
   return (
     <div className="touch-pan-x rounded-xl border bg-card shadow-sm overflow-x-auto [-webkit-overflow-scrolling:touch]">
       <Table className="min-w-[44rem]">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
+            {selectable && (
+              <TableHead className="w-[44px]">
+                <Checkbox
+                  checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                  onCheckedChange={value => onToggleSelectAll?.(value === true)}
+                  aria-label="Select all applications"
+                />
+              </TableHead>
+            )}
             <TableHead className="font-semibold">Company</TableHead>
             <TableHead className="font-semibold">Role</TableHead>
             <TableHead className="font-semibold">Location</TableHead>
@@ -37,7 +62,21 @@ export function ApplicationTable({ applications, onEdit, onDelete, onStatusChang
         </TableHeader>
         <TableBody>
           {applications.map(app => (
-            <TableRow key={app.id} className="group cursor-pointer" onClick={() => onEdit(app)}>
+            <TableRow
+              key={app.id}
+              data-state={selectedIds.includes(app.id) ? 'selected' : undefined}
+              className="group cursor-pointer"
+              onClick={() => onEdit(app)}
+            >
+              {selectable && (
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedIds.includes(app.id)}
+                    onCheckedChange={() => onToggleSelect?.(app.id)}
+                    aria-label={`Select ${app.company} ${app.role}`}
+                  />
+                </TableCell>
+              )}
               <TableCell className="font-medium">{app.company}</TableCell>
               <TableCell>{app.role}</TableCell>
               <TableCell className="text-muted-foreground">{app.location}</TableCell>

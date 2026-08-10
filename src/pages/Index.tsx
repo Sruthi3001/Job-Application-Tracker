@@ -168,6 +168,22 @@ const Index = () => {
   const handleDelete = (id: string) => deleteApplication(id);
   const handleStatusChange = (id: string, status: ApplicationStatus) => updateApplication(id, { status });
 
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+  const toggleSelectAll = (checked: boolean) => {
+    const visibleIds = filtered.map(a => a.id);
+    setSelectedIds(prev =>
+      checked ? Array.from(new Set([...prev, ...visibleIds])) : prev.filter(id => !visibleIds.includes(id))
+    );
+  };
+
+  const confirmBulkDelete = async () => {
+    await deleteApplications(selectedIds);
+    setSelectedIds([]);
+    setBulkDeleteOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">

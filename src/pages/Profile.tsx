@@ -80,6 +80,36 @@ export default function Profile() {
     setSaving(false);
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    setChangingPassword(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email || '',
+      password: currentPassword,
+    });
+    if (signInError) {
+      toast.error('Current password is incorrect');
+      setChangingPassword(false);
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Password updated');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+    setChangingPassword(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 supports-[padding:max(0px)]:pt-[env(safe-area-inset-top)]">

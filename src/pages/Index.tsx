@@ -9,12 +9,22 @@ import { AnalyticsCharts } from '@/components/AnalyticsCharts';
 import { useApplications } from '@/hooks/useApplications';
 import { useAuth } from '@/hooks/useAuth';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home } from 'lucide-react';
+import { Plus, Search, Briefcase, LogOut, BarChart3, User, Home, Trash2 } from 'lucide-react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileDrawerNav } from '@/components/MobileDrawerNav';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 /** Trim + lowercase so filter options dedupe (e.g. "Remote" vs "remote "). */
 function dedupeKey(value: string): string {
@@ -23,7 +33,7 @@ function dedupeKey(value: string): string {
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  const { applications, loading, addApplication, updateApplication, deleteApplication } = useApplications();
+  const { applications, loading, addApplication, updateApplication, deleteApplication, deleteApplications } = useApplications();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname + location.search;
@@ -35,6 +45,8 @@ const Index = () => {
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<JobApplication | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const showAnalytics = location.search.includes('tab=analytics');
 
   const openAddDialog = useCallback(() => {

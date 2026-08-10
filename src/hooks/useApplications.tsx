@@ -129,5 +129,12 @@ export function useApplications() {
     else { toast.success('Deleted'); await fetchApps(); }
   };
 
-  return { applications, loading, addApplication, updateApplication, deleteApplication, refetch: fetchApps };
+  const deleteApplications = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    const { error } = await supabase.from('applications').delete().in('id', ids);
+    if (error) { toast.error('Failed to delete selected'); console.error(error); }
+    else { toast.success(`Deleted ${ids.length} application${ids.length > 1 ? 's' : ''}`); await fetchApps(); }
+  };
+
+  return { applications, loading, addApplication, updateApplication, deleteApplication, deleteApplications, refetch: fetchApps };
 }

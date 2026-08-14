@@ -45,7 +45,7 @@ export default function Auth() {
   }
 
   if (user && !recoverySession) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +106,7 @@ export default function Auth() {
       toast.success('Password updated. Redirecting…');
       setRecoverySession(false);
       window.history.replaceState(null, '', '/auth');
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not update password';
       toast.error(message);

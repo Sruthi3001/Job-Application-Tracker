@@ -155,9 +155,9 @@ const Index = () => {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const handleSave = (data: Omit<JobApplication, 'id'>, resumeFile?: File) => {
+  const handleSave = (data: Omit<JobApplication, 'id'>, resumeFile?: File, removeResume?: boolean) => {
     if (editing) {
-      updateApplication(editing.id, data, resumeFile);
+      updateApplication(editing.id, data, resumeFile, removeResume);
     } else {
       addApplication(data, resumeFile);
     }

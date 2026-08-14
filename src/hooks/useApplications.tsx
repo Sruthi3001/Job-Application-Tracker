@@ -97,7 +97,7 @@ export function useApplications() {
     else { toast.success('Application added'); await fetchApps(); }
   };
 
-  const updateApplication = async (id: string, updates: Partial<JobApplication>, resumeFile?: File) => {
+  const updateApplication = async (id: string, updates: Partial<JobApplication>, resumeFile?: File, removeResume?: boolean) => {
     if (!user) return;
     const dbUpdates: Record<string, any> = {};
     if (updates.company !== undefined) dbUpdates.company = updates.company;
@@ -109,6 +109,15 @@ export function useApplications() {
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes || null;
     if (updates.salary !== undefined) dbUpdates.salary = updates.salary || null;
     if (updates.type !== undefined) dbUpdates.type = updates.type;
+
+    if (removeResume && !resumeFile) {
+      const existing = applications.find(a => a.id === id);
+      if (existing?.resumeUrl) {
+        await supabase.storage.from('resumes').remove([existing.resumeUrl]);
+      }
+      dbUpdates.resume_url = null;
+      dbUpdates.resume_name = null;
+    }
 
     if (resumeFile) {
       const path = `${user.id}/${Date.now()}_${resumeFile.name}`;

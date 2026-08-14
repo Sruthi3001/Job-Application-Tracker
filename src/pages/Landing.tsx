@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Briefcase, ArrowRight, BarChart3, Shield, Layers, Home, User, LogOut } from 'lucide-react';
@@ -11,7 +11,7 @@ import { MobileDrawerNav } from '@/components/MobileDrawerNav';
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const currentPath = location.pathname + location.search;
 
   const landingMobileNavItems = useMemo(() => {

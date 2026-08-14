@@ -6,13 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { JobApplication, ApplicationStatus } from '@/lib/types';
-import { FileText, Upload, X } from 'lucide-react';
+import { FileText, Upload, X, Eye, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   application?: JobApplication | null;
-  onSave: (data: Omit<JobApplication, 'id'>, resumeFile?: File) => void;
+  onSave: (data: Omit<JobApplication, 'id'>, resumeFile?: File, removeResume?: boolean) => void;
 }
 
 const defaultForm = {
@@ -24,6 +26,7 @@ const defaultForm = {
 export function ApplicationDialog({ open, onOpenChange, application, onSave }: Props) {
   const [form, setForm] = useState(defaultForm);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [removeResume, setRemoveResume] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,9 +36,17 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
       setForm(defaultForm);
     }
     setResumeFile(null);
+    setRemoveResume(false);
   }, [application, open]);
 
   const set = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const viewResume = async () => {
+    if (!application?.resumeUrl) return;
+    const { data, error } = await supabase.storage.from('resumes').createSignedUrl(application.resumeUrl, 60);
+    if (error || !data?.signedUrl) { toast.error('Could not open resume'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

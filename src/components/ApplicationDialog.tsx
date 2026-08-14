@@ -115,7 +115,7 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
           {/* Resume Upload */}
           <div className="space-y-1.5">
             <Label>Resume</Label>
-            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => { if (e.target.files?.[0]) setResumeFile(e.target.files[0]); }} />
+            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => { if (e.target.files?.[0]) { setResumeFile(e.target.files[0]); setRemoveResume(false); } e.target.value = ''; }} />
             {resumeFile ? (
               <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                 <FileText className="h-4 w-4 text-primary shrink-0" />
@@ -124,18 +124,27 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
                   <X className="h-3 w-3" />
                 </Button>
               </div>
-            ) : application?.resumeName ? (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+            ) : application?.resumeName && !removeResume ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                 <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm truncate flex-1">{application.resumeName}</span>
+                <span className="text-sm truncate flex-1 min-w-[6rem]">{application.resumeName}</span>
+                <Button variant="outline" size="sm" onClick={viewResume}>
+                  <Eye className="h-3 w-3 mr-1" /> View
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                   <Upload className="h-3 w-3 mr-1" /> Replace
+                </Button>
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => { setRemoveResume(true); setResumeFile(null); }}>
+                  <Trash2 className="h-3 w-3 mr-1" /> Delete
                 </Button>
               </div>
             ) : (
               <Button variant="outline" className="w-full gap-2" onClick={() => fileInputRef.current?.click()}>
                 <Upload className="h-4 w-4" /> Upload Resume (PDF, DOC)
               </Button>
+            )}
+            {removeResume && !resumeFile && application?.resumeName && (
+              <p className="text-xs text-muted-foreground">Resume will be deleted when you save.</p>
             )}
           </div>
 
@@ -146,7 +155,7 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => { if (form.company && form.role) { onSave(form, resumeFile || undefined); onOpenChange(false); } }} disabled={!form.company || !form.role}>
+          <Button onClick={() => { if (form.company && form.role) { onSave(form, resumeFile || undefined, removeResume); onOpenChange(false); } }} disabled={!form.company || !form.role}>
             {application ? 'Save Changes' : 'Add Application'}
           </Button>
         </DialogFooter>

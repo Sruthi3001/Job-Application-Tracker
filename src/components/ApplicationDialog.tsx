@@ -42,10 +42,24 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
   const set = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
   const viewResume = async () => {
+    // Newly selected (not yet saved) file: open it locally
+    if (resumeFile) {
+      const url = URL.createObjectURL(resumeFile);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      return;
+    }
     if (!application?.resumeUrl) return;
-    const { data, error } = await supabase.storage.from('resumes').createSignedUrl(application.resumeUrl, 60);
-    if (error || !data?.signedUrl) { toast.error('Could not open resume'); return; }
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    // Open a tab synchronously so popup blockers don't block it after the async call
+    const win = window.open('', '_blank');
+    const { data, error } = await supabase.storage.from('resumes').createSignedUrl(application.resumeUrl, 300);
+    if (error || !data?.signedUrl) {
+      win?.close();
+      toast.error('Could not open resume');
+      return;
+    }
+    if (win) win.location.href = data.signedUrl;
+    else window.location.assign(data.signedUrl);
   };
 
   return (
@@ -116,18 +130,10 @@ export function ApplicationDialog({ open, onOpenChange, application, onSave }: P
           <div className="space-y-1.5">
             <Label>Resume</Label>
             <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => { if (e.target.files?.[0]) { setResumeFile(e.target.files[0]); setRemoveResume(false); } e.target.value = ''; }} />
-            {resumeFile ? (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-                <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm truncate flex-1">{resumeFile.name}</span>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setResumeFile(null)}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ) : application?.resumeName && !removeResume ? (
+            {resumeFile || (application?.resumeName && !removeResume) ? (
               <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                 <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm truncate flex-1 min-w-[6rem]">{application.resumeName}</span>
+                <span className="text-sm truncate flex-1 min-w-[6rem]">{resumeFile ? resumeFile.name : application?.resumeName}</span>
                 <Button variant="outline" size="sm" onClick={viewResume}>
                   <Eye className="h-3 w-3 mr-1" /> View
                 </Button>

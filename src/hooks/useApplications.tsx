@@ -53,14 +53,32 @@ export function useApplications() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * When the backend has been idle (e.g. between weekly keep-alive pings) the
+   * first request can fail or take a while while it wakes up. Retry a few
+   * times with a short backoff instead of failing immediately, and only show
+   * an error toast after all attempts are exhausted.
+   */
   const fetchApps = useCallback(async () => {
     if (!user) { setApplications([]); setLoading(false); return; }
-    const { data, error } = await supabase
-      .from('applications')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) { toast.error('Failed to load applications'); console.error(error); }
-    else setApplications((data as DbApp[]).map(toJobApp));
+    const maxAttempts = 4;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error) {
+        setApplications((data as DbApp[]).map(toJobApp));
+        setLoading(false);
+        return;
+      }
+      if (attempt < maxAttempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, 4000 * (attempt + 1)));
+        continue;
+      }
+      toast.error('Failed to load applications');
+      console.error(error);
+    }
     setLoading(false);
   }, [user]);
 

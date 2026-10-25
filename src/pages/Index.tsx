@@ -304,8 +304,12 @@ const Index = () => {
         )}
 
         {loading ? (
-          <div className="rounded-xl border bg-card p-12 text-center">
+          <div className="rounded-xl border bg-card p-12 text-center space-y-4">
             <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+            <p className="text-sm text-muted-foreground">Loading your applications…</p>
+            <p className="text-xs text-muted-foreground">
+              If the site hasn't been opened in a while, this can take a minute while the server wakes up.
+            </p>
           </div>
         ) : (
           <ApplicationTable
